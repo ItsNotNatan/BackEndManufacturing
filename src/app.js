@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const origensPermitidas = require('./config/corsOptions');
 
 // Inicializamos a aplicação Express
 const app = express();
@@ -15,8 +16,10 @@ const app = express();
 app.use(helmet());
 
 // CORS: Permite que o teu Front-end (React) comunique com este Back-end
+// src/app.js (Apenas o bloco do CORS)
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Autoriza o teu Vite local
+    origin: origensPermitidas,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));

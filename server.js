@@ -7,6 +7,7 @@ require('dotenv').config();
 const http = require('http');
 const app = require('./src/app');
 const { Server } = require('socket.io');
+const origensPermitidas = require('./src/config/corsOptions');
 
 // Definimos a porta onde o servidor vai correr (lê do .env ou usa 3000 como padrão)
 const PORT = process.env.PORT || 3000;
@@ -18,7 +19,7 @@ const servidorHttp = http.createServer(app);
 // Ligamos o Socket.io ao nosso servidor HTTP
 const io = new Server(servidorHttp, {
     cors: {
-        origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+        origin: origensPermitidas,
         methods: ["GET", "POST"]
     }
 });
