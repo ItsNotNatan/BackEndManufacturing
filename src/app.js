@@ -5,35 +5,35 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+
+// 1. Importação da lista de origens autorizadas (Front-ends)
 const origensPermitidas = require('./config/corsOptions');
 
-// Inicializamos a aplicação Express
+// 2. Inicialização do servidor Express
 const app = express();
 
-// --- 1. MIDDLEWARES DE SEGURANÇA E REGISTO ---
+// --- MIDDLEWARES DE SEGURANÇA E REGISTO ---
 
-// Helmet: Adiciona cabeçalhos HTTP que protegem contra ataques comuns
+// Adiciona cabeçalhos de proteção
 app.use(helmet());
 
-// CORS: Permite que o teu Front-end (React) comunique com este Back-end
-// src/app.js (Apenas o bloco do CORS)
-
+// Permite a comunicação com os nossos Front-ends
 app.use(cors({
     origin: origensPermitidas,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
 
-// Morgan: Regista (log) todos os pedidos que chegam ao servidor no terminal
+// Regista os acessos no terminal para facilitar a nossa depuração
 app.use(morgan('dev'));
 
-// Permite que o servidor entenda pedidos com dados no formato JSON (como o teu formulário)
+// Permite que o servidor entenda dados enviados no formato JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- 2. ROTAS INICIAIS ---
+// --- ROTAS DA APLICAÇÃO ---
 
-// Rota de teste para garantir que o servidor está "vivo"
+// Rota padrão para verificar se o servidor está online
 app.get('/api/status', (req, res) => {
     res.status(200).json({
         mensagem: 'Servidor NexusFactory está operacional!',
@@ -41,8 +41,14 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-// Futuramente, importaremos as rotas de dispositivos e utilizadores aqui.
-// Exemplo: app.use('/api/dispositivos', rotasDeDispositivos);
+// ==========================================
+// NOVIDADE: ATIVAÇÃO DA ROTA DE DISPOSITIVOS
+// ==========================================
+// 1. Importamos a lógica das rotas de dispositivos
+const rotasDeDispositivos = require('./routes/dispositivos');
 
-// Exportamos a aplicação configurada para ser usada no server.js
+// 2. Avisamos o servidor para usar essas rotas no caminho '/api/dispositivos'
+app.use('/api/dispositivos', rotasDeDispositivos);
+
+// Exportamos a aplicação configurada para o server.js
 module.exports = app;
