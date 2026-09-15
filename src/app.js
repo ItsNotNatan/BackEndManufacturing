@@ -8,6 +8,7 @@ const morgan = require('morgan');
 
 // 1. Importação da lista de origens autorizadas (Front-ends)
 const origensPermitidas = require('./config/corsOptions');
+const tratarErros = require('./middlewares/tratarErros');
 
 // 2. Inicialização do servidor Express
 const app = express();
@@ -28,6 +29,7 @@ app.use(cors({
 app.use(morgan('dev'));
 
 // Permite que o servidor entenda dados enviados no formato JSON
+app.use(tratarErros);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
