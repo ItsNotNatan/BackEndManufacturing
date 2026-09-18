@@ -4,11 +4,29 @@
 const express = require('express');
 const router = express.Router();
 
+// 1. Importações dos nossos Controladores e Middlewares Profissionais
 const dispositivosController = require('../controllers/dispositivosController');
-// 1. Importamos o middleware de validação que acabamos de criar
-const validarDispositivo = require('../middlewares/validarDispositivo');
+const validarSchema = require('../middlewares/validarSchema');
+const asyncHandler = require('../middlewares/asyncHandler');
+const dispositivoSchema = require('../schemas/dispositivoSchema');
 
-// 2. Colocamos o 'validarDispositivo' como guarda de trânsito ANTES do controlador
-router.post('/', validarDispositivo, dispositivosController.criarDispositivo);
+// ==========================================
+// DEFINIÇÃO DAS ROTAS
+// ==========================================
+
+// ROTA GET: Buscar a lista de dispositivos (Usada na tela de Acompanhamento)
+// Protegida pelo asyncHandler para evitar que falhas de rede travem o servidor
+router.get(
+    '/',
+    asyncHandler(dispositivosController.listarDispositivos)
+);
+
+// ROTA POST: Criar um novo dispositivo (Usada no envio do Formulário)
+// A linha de montagem: Valida os dados -> Captura Erros Assíncronos -> Executa o Controlador
+router.post(
+    '/',
+    validarSchema(dispositivoSchema),
+    asyncHandler(dispositivosController.criarDispositivo)
+);
 
 module.exports = router;

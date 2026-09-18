@@ -22,29 +22,30 @@ const dispositivoSchema = z.object({
     status: z.string().default('pendente')
 });
 
-// 2. Função Middleware
-const validarDispositivo = (req, res, next) => {
-    // Tenta validar os dados recebidos na requisição
-    const resultado = dispositivoSchema.safeParse(req.body);
+// ==========================================
+// FILE: src/middlewares/validarSchema.js
+// ==========================================
+
+const validarSchema = (schema) => (req, res, next) => {
+    const resultado = schema.safeParse(req.body);
 
     if (!resultado.success) {
-        // Formata os erros encontrados para enviar uma resposta clara
         const errosFormatados = resultado.error.issues.map(issue => ({
             campo: issue.path.join('.'),
             mensagem: issue.message
         }));
 
-        console.warn("⚠️ Tentativa de envio com dados inválidos:", errosFormatados);
+        console.warn("⚠️ Dados bloqueados pelo Zod no Back-end:", errosFormatados);
 
         return res.status(400).json({
-            erro: 'Dados do formulário inválidos.',
+            sucesso: false,
+            erro: 'Dados informados são inválidos.',
             detalhes: errosFormatados
         });
     }
 
-    // Se a validação passar, atualiza req.body com os dados higienizados e prossegue
     req.body = resultado.data;
     next();
 };
 
-module.exports = validarDispositivo;
+module.exports = validarSchema;
