@@ -9,6 +9,7 @@ const morgan = require('morgan');
 // 1. Importação da lista de origens autorizadas (Front-ends)
 const origensPermitidas = require('./config/corsOptions');
 const tratarErros = require('./middlewares/tratarErros');
+const rotasDeDispositivos = require('./routes/dispositivos');
 
 // 2. Inicialização do servidor Express
 const app = express();
@@ -29,7 +30,6 @@ app.use(cors({
 app.use(morgan('dev'));
 
 // Permite que o servidor entenda dados enviados no formato JSON
-app.use(tratarErros);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -43,14 +43,14 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-// ==========================================
-// NOVIDADE: ATIVAÇÃO DA ROTA DE DISPOSITIVOS
-// ==========================================
-// 1. Importamos a lógica das rotas de dispositivos
-const rotasDeDispositivos = require('./routes/dispositivos');
-
-// 2. Avisamos o servidor para usar essas rotas no caminho '/api/dispositivos'
+// Avisamos o servidor para usar as rotas no caminho '/api/dispositivos'
 app.use('/api/dispositivos', rotasDeDispositivos);
+
+// ==========================================
+// TRATAMENTO GLOBAL DE ERROS (A REDE DE SEGURANÇA)
+// ==========================================
+// OBRIGATÓRIO: Tem de ser a última coisa antes do module.exports!
+app.use(tratarErros);
 
 // Exportamos a aplicação configurada para o server.js
 module.exports = app;
