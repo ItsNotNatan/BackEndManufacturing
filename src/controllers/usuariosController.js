@@ -4,12 +4,13 @@
 const axios = require('axios');
 
 /**
- * Busca todos os utilizadores registados no Supabase.
+ * Busca todos os utilizadores registados e traz os dados da sua respetiva Área.
  */
 exports.listarUsuarios = async (req, res) => {
-    console.log("👥 A buscar lista de utilizadores no Supabase...");
+    console.log("👥 A buscar lista de utilizadores com as respetivas áreas no Supabase...");
 
-    const urlSupabase = `${process.env.SUPABASE_URL}/rest/v1/usuarios?select=*`;
+    // O select=*,areas(id,nome) faz o cruzamento automático das tabelas no Supabase!
+    const urlSupabase = `${process.env.SUPABASE_URL}/rest/v1/usuarios?select=*,areas(id,nome)&order=criado_em.asc`;
 
     const respostaSupabase = await axios.get(urlSupabase, {
         headers: {
@@ -27,12 +28,11 @@ exports.listarUsuarios = async (req, res) => {
 };
 
 /**
- * Cria um novo utilizador na base de dados Supabase via API REST.
- * Os dados já chegam validados pelo middleware do Zod.
+ * Regista um novo utilizador na base de dados ligado a uma Área específica.
  */
 exports.criarUsuario = async (req, res) => {
     const dadosDoFormulario = req.body;
-    console.log("👤 Dados de novo utilizador validados:", dadosDoFormulario);
+    console.log("👤 Dados de novo utilizador recebidos e validados:", dadosDoFormulario);
 
     const urlSupabase = `${process.env.SUPABASE_URL}/rest/v1/usuarios`;
 
@@ -54,13 +54,13 @@ exports.criarUsuario = async (req, res) => {
             dados: respostaSupabase.data
         });
     } catch (erro) {
-        // Captura o erro específico caso o email já exista na base de dados (regra UNIQUE)
+        // Trata erro de e-mail duplicado (Regra UNIQUE da base de dados)
         if (erro.response && erro.response.data && erro.response.data.code === '23505') {
             return res.status(409).json({
                 sucesso: false,
-                erro: 'Já existe um utilizador registado com este endereço de email.'
+                erro: 'Já existe um utilizador registado com este endereço de e-mail.'
             });
         }
-        throw erro; // Repassa outros erros para o tratador global (asyncHandler)
+        throw erro;
     }
 };
