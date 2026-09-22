@@ -1,44 +1,40 @@
 // ==========================================
-// FILE: src/app.js
+// FILE: src/app.js (BACK-END CONCLUÍDO)
 // ==========================================
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-// 1. Importação da lista de origens autorizadas (Front-ends)
+// 1. Importação das opções de CORS e Middleware de Erros
 const origensPermitidas = require('./config/corsOptions');
 const tratarErros = require('./middlewares/tratarErros');
 
-// 2. Importação dos roteadores
+// 2. Importação dos Roteadores da Aplicação
 const rotasDeDispositivos = require('./routes/dispositivos');
-const rotasDeUsuarios = require('./routes/usuarios'); // Nova rota de RBAC (Contas e Cargos)
+const rotasDeUsuarios = require('./routes/usuarios');
+const rotasDeAuth = require('./routes/auth'); // ✨ NOVO: Rota de Autenticação / Login
 
 // 3. Inicialização do servidor Express
 const app = express();
 
 // --- MIDDLEWARES DE SEGURANÇA E REGISTO ---
-
-// Adiciona cabeçalhos de proteção HTTP contra vulnerabilidades comuns
 app.use(helmet());
 
-// Permite a comunicação com os nossos Front-ends (NexusLog e NexusFactory)
 app.use(cors({
     origin: origensPermitidas,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
 
-// Regista os acessos no terminal para facilitar a nossa depuração (logs)
 app.use(morgan('dev'));
 
-// Permite que o servidor entenda dados enviados no formato JSON nos corpos das requisições (req.body)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- ROTAS DA APLICAÇÃO ---
 
-// Rota padrão para verificar se o servidor está online (Healthcheck)
+// Healthcheck (Verificação de estado)
 app.get('/api/status', (req, res) => {
     res.status(200).json({
         mensagem: 'Servidor NexusFactory está operacional!',
@@ -46,16 +42,13 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-// Avisamos o servidor para usar as rotas de negócio nos caminhos específicos
+// Mapeamento dos endpoints principais
 app.use('/api/dispositivos', rotasDeDispositivos);
-app.use('/api/usuarios', rotasDeUsuarios); // Ponto de comunicação para o painel de Configurações
+app.use('/api/usuarios', rotasDeUsuarios);
+app.use('/api/auth', rotasDeAuth); // ✨ NOVO: Ativa o endpoint POST /api/auth/login
 
-// ==========================================
-// TRATAMENTO GLOBAL DE ERROS (A REDE DE SEGURANÇA)
-// ==========================================
-// OBRIGATÓRIO: Tem de ser a última coisa antes do module.exports!
-// Captura qualquer erro lançado pelos controllers ou middlewares do Zod
+// --- TRATAMENTO GLOBAL DE ERROS ---
+// Obrigatoriamente o último middleware registrado
 app.use(tratarErros);
 
-// Exportamos a aplicação configurada para o server.js
 module.exports = app;
